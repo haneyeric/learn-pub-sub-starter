@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
+	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 
@@ -25,9 +24,9 @@ func main() {
 		fmt.Printf("Connection error: %s", err)
 		return
 	}
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
-	<-signalChan
-	pubsub.PublishJSON(ch, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{IsPaused: true})
-	fmt.Println("Closing connection")
+	err = pubsub.PublishJSON(ch, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{IsPaused: true})
+	if err != nil {
+		log.Printf("could not publish: %v", err)
+		return
+	}
 }
