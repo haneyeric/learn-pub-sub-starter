@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 
@@ -33,9 +31,46 @@ func main() {
 		log.Printf("couldn't DeclareAndBind: %v", err)
 		return
 	}
-	fmt.Printf("Queue %v declared and bound.", q.Name)
+	fmt.Printf("Queue %v declared and bound.\n", q.Name)
+
+	gamestate := gamelogic.NewGameState(username)
 	// wait for ctrl+c
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
-	<-signalChan
+	for {
+		words := gamelogic.GetInput()
+		if len(words) == 0 {
+			continue
+		}
+		switch words[0] {
+
+		case "spawn":
+			err = gamestate.CommandSpawn(words)
+			if err != nil {
+				log.Printf("could not spawn: %v", err)
+			}
+
+		case "move":
+			_, err := gamestate.CommandMove(words)
+			if err != nil {
+				log.Printf("could not spawn: %v", err)
+			} else {
+				fmt.Println("Move successful")
+			}
+
+		case "status":
+			gamestate.CommandStatus()
+
+		case "help":
+			gamelogic.PrintClientHelp()
+
+		case "spam":
+			fmt.Println("Spamming not allowed yet!")
+
+		case "quit":
+			gamelogic.PrintQuit()
+			return
+
+		default:
+			fmt.Println("unknown command")
+		}
+	}
 }
