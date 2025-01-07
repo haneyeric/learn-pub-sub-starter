@@ -28,6 +28,13 @@ func main() {
 		return
 	}
 
+	_, q, err := pubsub.DeclareAndBind(conn, routing.ExchangePerilTopic, routing.GameLogSlug, "game_logs.*", pubsub.DURABLE)
+	if err != nil {
+		log.Printf("couldn't DeclareAndBind: %v", err)
+		return
+	}
+	fmt.Printf("Queue %v declared and bound.\n", q.Name)
+
 	for {
 		words := gamelogic.GetInput()
 		if len(words) == 0 {
