@@ -29,4 +29,5 @@ func main() {
 		log.Printf("could not publish: %v", err)
 		return
 	}
+	fmt.Println("Pause message sent")
 }
