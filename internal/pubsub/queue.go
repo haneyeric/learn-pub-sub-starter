@@ -4,6 +4,8 @@ import (
 	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+
+	"github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
 )
 
 const (
@@ -23,7 +25,7 @@ func DeclareAndBind(
 		log.Printf("couldn't create channel: %v", err)
 		return nil, amqp.Queue{}, err
 	}
-	q, err := ch.QueueDeclare(queueName, simpleQueueType == DURABLE, simpleQueueType == TRANSIENT, simpleQueueType == TRANSIENT, false, amqp.Table{})
+	q, err := ch.QueueDeclare(queueName, simpleQueueType == DURABLE, simpleQueueType == TRANSIENT, simpleQueueType == TRANSIENT, false, amqp.Table{"x-dead-letter-exchange": routing.ExchangePerilDeadLetter})
 	if err != nil {
 		log.Printf("couldn't create queue: %v", err)
 		return nil, amqp.Queue{}, err
