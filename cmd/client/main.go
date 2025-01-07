@@ -26,15 +26,14 @@ func main() {
 		return
 	}
 
-	_, q, err := pubsub.DeclareAndBind(conn, routing.ExchangePerilDirect, fmt.Sprintf("%s.%s", routing.PauseKey, username), routing.PauseKey, pubsub.TRANSIENT)
+	gamestate := gamelogic.NewGameState(username)
+
+	err = pubsub.SubscribeJSON(conn, routing.ExchangePerilDirect, routing.PauseKey+"."+gamestate.GetUsername(), routing.PauseKey, pubsub.TRANSIENT, handlerPause(gamestate))
 	if err != nil {
-		log.Printf("couldn't DeclareAndBind: %v", err)
+		log.Printf("couldn't subscribe: %v", err)
 		return
 	}
-	fmt.Printf("Queue %v declared and bound.\n", q.Name)
 
-	gamestate := gamelogic.NewGameState(username)
-	// wait for ctrl+c
 	for {
 		words := gamelogic.GetInput()
 		if len(words) == 0 {
@@ -72,5 +71,13 @@ func main() {
 		default:
 			fmt.Println("unknown command")
 		}
+	}
+}
+
+func handlerPause(gs *gamelogic.GameState) func(routing.PlayingState) {
+
+	return func(ps routing.PlayingState) {
+		defer fmt.Print("> ")
+		gs.HandlePause(ps)
 	}
 }
