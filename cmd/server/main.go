@@ -28,12 +28,11 @@ func main() {
 		return
 	}
 
-	_, q, err := pubsub.DeclareAndBind(conn, routing.ExchangePerilTopic, routing.GameLogSlug, "game_logs.*", pubsub.DURABLE)
+	err = pubsub.SubscribeGob(conn, routing.ExchangePerilTopic, routing.GameLogSlug, "game_logs.*", pubsub.DURABLE, handlerLogs())
 	if err != nil {
-		log.Printf("couldn't DeclareAndBind: %v", err)
+		log.Printf("couldn't publishgob: %v", err)
 		return
 	}
-	fmt.Printf("Queue %v declared and bound.\n", q.Name)
 
 	for {
 		words := gamelogic.GetInput()
@@ -65,5 +64,18 @@ func main() {
 		default:
 			fmt.Printf("I do not understand command: %v\n", words[0])
 		}
+	}
+}
+
+func handlerLogs() func(gamelog routing.GameLog) pubsub.Acktype {
+	return func(gamelog routing.GameLog) pubsub.Acktype {
+		defer fmt.Print("> ")
+
+		err := gamelogic.WriteLog(gamelog)
+		if err != nil {
+			fmt.Printf("error writing log: %v\n", err)
+			return pubsub.NackRequeue
+		}
+		return pubsub.Ack
 	}
 }
