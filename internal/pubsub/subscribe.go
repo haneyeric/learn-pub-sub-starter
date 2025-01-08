@@ -31,6 +31,10 @@ func SubscribeJSON[T any](
 		return err
 	}
 
+	err = qChan.Qos(10, 0, false)
+	if err != nil {
+		return err
+	}
 	delChan, err := qChan.Consume(q.Name, "", false, false, false, false, amqp.Table{})
 	if err != nil {
 		log.Printf("couldn't create delivery channel: %v", err)
@@ -71,6 +75,10 @@ func SubscribeGob[T any](
 	qChan, q, err := DeclareAndBind(conn, exchange, queueName, key, simpleQueueType)
 	if err != nil {
 		log.Printf("couldn't DeclareAndBind: %v", err)
+		return err
+	}
+	err = qChan.Qos(10, 0, false)
+	if err != nil {
 		return err
 	}
 
