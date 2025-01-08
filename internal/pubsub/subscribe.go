@@ -2,7 +2,6 @@ package pubsub
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -48,13 +47,10 @@ func SubscribeJSON[T any](
 			switch handler(msg) {
 			case Ack:
 				del.Ack(false)
-				fmt.Println("Ack")
 			case NackDiscard:
 				del.Nack(false, false)
-				fmt.Println("NackDiscard")
 			case NackRequeue:
 				del.Nack(false, true)
-				fmt.Println("NackRequeue")
 			}
 		}
 	}()

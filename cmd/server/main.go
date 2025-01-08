@@ -28,7 +28,7 @@ func main() {
 		return
 	}
 
-	_, q, err := pubsub.DeclareAndBind(conn, routing.ExchangePerilTopic, routing.GameLogSlug, routing.GameLogSlug+".*", pubsub.DURABLE)
+	_, q, err := pubsub.DeclareAndBind(conn, routing.ExchangePerilTopic, routing.GameLogSlug, "game_logs.*", pubsub.DURABLE)
 	if err != nil {
 		log.Printf("couldn't DeclareAndBind: %v", err)
 		return
